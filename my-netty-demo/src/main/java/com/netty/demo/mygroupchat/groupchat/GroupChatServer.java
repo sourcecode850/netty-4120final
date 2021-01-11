@@ -24,6 +24,8 @@ public class GroupChatServer {
 
         final Selector selector = Selector.open();
 
+        boolean notStarted = true;
+
         while (true) {
             // 这里是阻塞的，将获取的channel交给其他线程处理
             SocketChannel socketChannel = serverSocketChannel.accept();
@@ -32,28 +34,31 @@ public class GroupChatServer {
             SelectionKey key = socketChannel.register(selector, SelectionKey.OP_READ);
             // 分配一个ByteBuffer
             key.attach(ByteBuffer.allocate(1024));
-            new Thread(() -> {
-                try {
-                    while (selector.select() > 0) {
-                        Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
-                        while (iterator.hasNext()) {
-                            SelectionKey selectionKey = iterator.next();
-                            if (selectionKey.isReadable()) {
-                                SocketChannel channel = (SocketChannel) selectionKey.channel();
-                                ByteBuffer attachment = (ByteBuffer) selectionKey.attachment();
-                                attachment.clear();
-                                channel.read(attachment);
-                                System.out.println("客户端发送的数据=====" + new String(attachment.array()));
-                                // 这里记得将已经处理过的SelectionKey删除掉，否则下次不会再触发了
-                                iterator.remove();
+            if (notStarted) {
+                notStarted = false;
+                new Thread(() -> {
+                    try {
+                        while (selector.select() > 0) {
+                            Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
+                            while (iterator.hasNext()) {
+                                SelectionKey selectionKey = iterator.next();
+                                if (selectionKey.isReadable()) {
+                                    SocketChannel channel = (SocketChannel) selectionKey.channel();
+                                    ByteBuffer attachment = (ByteBuffer) selectionKey.attachment();
+                                    attachment.clear();
+                                    channel.read(attachment);
+                                    System.out.println("客户端" + channel.getRemoteAddress() + "发送的数据=====" + new String(attachment.array()));
+                                    // 这里记得将已经处理过的SelectionKey删除掉，否则下次不会再触发了
+                                    iterator.remove();
+                                }
                             }
                         }
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
 
-            }).start();
+                }).start();
+            }
         }
 
     }

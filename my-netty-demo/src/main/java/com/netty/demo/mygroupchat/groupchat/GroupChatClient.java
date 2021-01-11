@@ -22,7 +22,7 @@ public class GroupChatClient {
             Scanner scanner = new Scanner(System.in);
             while (scanner.hasNext()) {
                 String s = scanner.nextLine();
-                System.out.println("-----------");
+                System.out.println("客户端-----------" + socketChannel.getLocalAddress() + "发送的数据是：" + s);
                 socketChannel.write(ByteBuffer.wrap(s.getBytes("utf-8")));
             }
         }
