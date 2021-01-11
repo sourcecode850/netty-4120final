@@ -61,3 +61,5 @@ protected final Object filterOutboundMessage(Object msg) {
 
 几种channel的继承关系
 NioSocketChannle -> AbstractNioByteChannel -> AbstractNioChannel -> AbstractChannel -> DefaultAttributeMap -> Object
+
+(3)不使用StringEncoder和StringDecoder，发送数据的时候封装成ByteBuf，接收数据将ByteBuf转化成需要的类型即可

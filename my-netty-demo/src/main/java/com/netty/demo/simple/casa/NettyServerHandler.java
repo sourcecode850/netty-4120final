@@ -1,5 +1,7 @@
 package com.netty.demo.simple.casa;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
@@ -21,8 +23,12 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        ByteBuf byteBuf = (ByteBuf) msg;
+        byte[] bytes = new byte[byteBuf.readableBytes()];
+        byteBuf.getBytes(0, bytes);
+        System.out.println("自己解码客户端发过来的数据：" + new String(bytes, "utf-8"));
         System.out.println("服务端接收到客户端的数据是：" + msg.toString());
-        ctx.writeAndFlush("你好，客户端，来信已收到");
+        ctx.writeAndFlush(Unpooled.wrappedBuffer("你好，客户端，来信已收到".getBytes("utf-8")));
     }
 
 }
