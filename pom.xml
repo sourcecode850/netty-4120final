@@ -247,6 +247,7 @@
     <module>testsuite-osgi</module>
     <module>microbench</module>
     <module>bom</module>
+    <module>my-netty-demo</module>
   </modules>
 
   <dependencyManagement>
