@@ -1,1 +1,2 @@
-# netty-4120final
+# netty-4.1.20.Final版本源码；
+自己修改了模块所在的目录名与模块名保持一致，这样idea看起来比较舒服；删除了单测中的assertEquals long类型的比较，不知道为啥老是报错。
