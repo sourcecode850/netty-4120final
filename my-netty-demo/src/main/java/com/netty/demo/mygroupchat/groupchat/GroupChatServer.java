@@ -46,8 +46,12 @@ public class GroupChatServer {
                                     SocketChannel channel = (SocketChannel) selectionKey.channel();
                                     ByteBuffer attachment = (ByteBuffer) selectionKey.attachment();
                                     attachment.clear();
-                                    channel.read(attachment);
-                                    System.out.println("客户端" + channel.getRemoteAddress() + "发送的数据=====" + new String(attachment.array()));
+                                    // 这里读了多少数据，就打印多少数据，否则会出现数据残留的问题
+                                    int readCount = channel.read(attachment);
+                                    // 数据的残留问题找到原因了；这里不应该使用attachment.array读取数据
+                                    System.out.println("客户端" + channel.getRemoteAddress() + "发送的数据=====" + new String(attachment.array(), 0, readCount));
+                                    // 这里记得将已经处理过的SelectionKey删除掉，否则下次不会再触发了
+                                    System.out.println("客户端" + channel.getRemoteAddress() + "发送的有残留的数据=====" + new String(attachment.array()));
                                     // 这里记得将已经处理过的SelectionKey删除掉，否则下次不会再触发了
                                     iterator.remove();
                                 }
