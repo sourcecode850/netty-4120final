@@ -52,10 +52,19 @@ public class AtGuiguGroupChatClient {
                     if (key.isReadable()) {
                         SocketChannel channel = (SocketChannel) key.channel();
                         ByteBuffer buffer = ByteBuffer.allocate(4);
-                        channel.read(buffer);
-                        // 把读缓冲区的数据转化成字符串
-                        String msg = new String(buffer.array());
-                        System.out.println("客户端收到的消息---" + msg.trim());
+                        // 设置成4个字节，需要循环读取数据，才能读干净channel中的数据，才能不持续触发当前读事件
+                        StringBuilder sb = new StringBuilder();
+                        while (true) {
+                            buffer.clear();
+                            int read = channel.read(buffer);
+                            if (read <= 0) {
+                                break;
+                            }
+                            // 把读缓冲区的数据转化成字符串
+                            sb.append(new String(buffer.array()));
+                        }
+
+                        System.out.println("客户端收到的消息---" + sb.toString());
                     }
                     iterator.remove();// 删除当前的SelectionKey，防止重复操作
                 }
