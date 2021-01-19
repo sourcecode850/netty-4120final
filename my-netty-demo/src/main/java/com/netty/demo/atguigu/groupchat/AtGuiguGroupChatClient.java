@@ -51,11 +51,11 @@ public class AtGuiguGroupChatClient {
                     SelectionKey key = iterator.next();
                     if (key.isReadable()) {
                         SocketChannel channel = (SocketChannel) key.channel();
-                        ByteBuffer buffer = ByteBuffer.allocate(1024);
+                        ByteBuffer buffer = ByteBuffer.allocate(4);
                         channel.read(buffer);
                         // 把读缓冲区的数据转化成字符串
                         String msg = new String(buffer.array());
-                        System.out.println(msg.trim());
+                        System.out.println("客户端收到的消息---" + msg.trim());
                     }
                     iterator.remove();// 删除当前的SelectionKey，防止重复操作
                 }

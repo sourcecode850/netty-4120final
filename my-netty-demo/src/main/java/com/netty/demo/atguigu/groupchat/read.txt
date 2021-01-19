@@ -1,3 +1,36 @@
 
 尚硅谷-韩顺平-netty课程 - nio 群聊demo
 这里要注意，强制关闭客户端，也是一个可读事件！！！！
+
+思考：
+小容量的byteBuffer 读取大文本，如何读取？
+https://www.cnblogs.com/dongma/p/10367999.html
+
+利用死循环和判断是否 读到0个字节，便能判断是否读取完成，但它存在如下问题，如果输入是中文的话，
+可能没有读取完中文的全部3个字节，导致乱码。如果数据足够随机，这样的情况肯定会出现的
+
+public void readStr() {
+    SocketChannel client = (SocketChannel) selectionKey.channel();
+    client.configureBlocking(false);
+    ByteBuffer byteBuffer = ByteBuffer.allocate(10);
+    StringBuilder sb=new StringBuilder();
+    while (true) {
+        byteBuffer.clear();
+        int read = client.read(byteBuffer);
+        if (read <= 0) {
+            System.out.println(client + "=" + sb);
+            break;
+        }
+        byteBuffer.flip();
+        String message = new String(byteBuffer.array(), CharsetUtil.UTF_8);
+        sb.append(message);
+    }
+}
+
+方案1：
+
+得到要读取数据的长度，然后指定byteBuffer 的容量，这样则可以一次性读取完所有数据
+
+方案2：
+
+定制协议，按协议好的长度读取定长数据，然后解析，这样能保证数据不乱
