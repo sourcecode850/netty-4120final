@@ -63,3 +63,11 @@ protected final Object filterOutboundMessage(Object msg) {
 NioSocketChannle -> AbstractNioByteChannel -> AbstractNioChannel -> AbstractChannel -> DefaultAttributeMap -> Object
 
 (3)不使用StringEncoder和StringDecoder，发送数据的时候封装成ByteBuf，接收数据将ByteBuf转化成需要的类型即可
+
+(4) debug，看看netty处理时序是怎么样的；
+客户端继承 ChannelInboundHandlerAdapter: 可以看到是先注册，再激活，读取数据，读取完毕后再执行 channelReadComplete
+    channelAdded=========
+    channelRegistered==========
+    channelActive==========
+    收到服务端的消息=我是服务器/127.0.0.1:8888
+    channelReadComplete==========
