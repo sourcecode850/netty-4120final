@@ -16,11 +16,13 @@ import io.netty.handler.codec.string.StringEncoder;
  **/
 public class DebugServer {
 
+    private static ServerBootstrap server;
+
     public static void main(String[] args) throws InterruptedException {
 
         ServerBootstrap serverBootstrap = new ServerBootstrap();
-        NioEventLoopGroup boss = new NioEventLoopGroup(2);
-        NioEventLoopGroup worker = new NioEventLoopGroup();
+        NioEventLoopGroup boss = new NioEventLoopGroup(10);
+        NioEventLoopGroup worker = new NioEventLoopGroup(2);
 
         serverBootstrap.group(boss, worker)
                 .option(ChannelOption.SO_BACKLOG, 16)
@@ -34,9 +36,13 @@ public class DebugServer {
                                 .addLast(new DebugServerHandler());
                     }
                 });
-
+        server = serverBootstrap;
         ChannelFuture sync = serverBootstrap.bind(8888).sync();
+        ChannelFuture sync1 = serverBootstrap.bind(9999).sync();
+        ChannelFuture sync2 = serverBootstrap.bind(10000).sync();
         sync.channel().closeFuture().sync();
+        sync1.channel().closeFuture().sync();
+        sync2.channel().closeFuture().sync();
         boss.shutdownGracefully();
         worker.shutdownGracefully();
     }

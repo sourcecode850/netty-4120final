@@ -101,4 +101,8 @@ channelActive
  3. scheduledTaskQueue使用和原理，其实就是简单的优先级队列，自己改拔改拔变成scheduled，看起来有scheduled的味道
 
 
+(5) ServerBootStrap 与 BootStrap启动分析
+
+5.1 serverBootStrap中boss如何将监听到的SocketChannel交给worker？
+注册task到子线程的taskQueue队列中
 

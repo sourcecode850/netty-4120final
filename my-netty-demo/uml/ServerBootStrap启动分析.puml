@@ -1,0 +1,26 @@
+@startuml
+ServerBootstrap -> AbstractBootstrap: bind(8888)
+AbstractBootstrap -> AbstractBootstrap: bind(socketAddress)
+AbstractBootstrap -> AbstractBootstrap: doBind(socketAddress)
+AbstractBootstrap -> ReflectiveChannelFactory: newChannel()
+note over ReflectiveChannelFactory: serverBootStrap启动的时候传递的NioServerSocketChannel
+AbstractBootstrap  <- ReflectiveChannelFactory: channel
+AbstractBootstrap -> ServerBootstrap: init(channel):父AbstractChannel中完成pipeline的创建
+ServerBootstrap -> AbstractChannel: pipeline()
+ServerBootstrap <- AbstractChannel: DefaultChannelPipeline
+ServerBootstrap -> DefaultChannelPipeline: addLast(ChannelHandler...)
+DefaultChannelPipeline -> DefaultChannelPipeline: addLast(EventExecutorGroup executor, ChannelHandler... handlers)
+DefaultChannelPipeline -> DefaultChannelPipeline: addLast(EventExecutorGroup executor, String name, ChannelHandler... handlers)
+DefaultChannelPipeline -> DefaultChannelHandlerContext: new DefaultChannelHandlerContext(this, childExecutor(group), name, handler);
+note left: 这里会对每一个handler包装成DefaultChannelHandlerContext，加入到pipeline后面
+AbstractBootstrap -> MultithreadEventLoopGroup:
+MultithreadEventLoopGroup -> SingleThreadEventLoop:register(Channel channel)
+SingleThreadEventLoop -> SingleThreadEventLoop:register(final ChannelPromise promise)
+note left: Channel包装成ChannelPromise
+SingleThreadEventLoop -> AbstractChannel:register(eventLoop, final ChannelPromise promise)
+AbstractChannel -> SingleThreadEventLoop:execute(new Runnable -> register(promise))
+SingleThreadEventLoop -> SingleThreadEventLoop:startThread()
+SingleThreadEventLoop -> SingleThreadEventExecutor:SingleThreadEventExecutor.this.run()
+
+
+@enduml
