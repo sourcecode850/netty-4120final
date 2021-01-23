@@ -18,7 +18,7 @@ public class DebugClient {
     public static void main(String[] args) throws InterruptedException {
 
         Bootstrap bootstrap = new Bootstrap();
-        NioEventLoopGroup worker = new NioEventLoopGroup(2);
+        NioEventLoopGroup worker = new NioEventLoopGroup(1);
         bootstrap.group(worker)
                 .channel(NioSocketChannel.class)
                 .handler(new ChannelInitializer<SocketChannel>() {

@@ -71,3 +71,34 @@ NioSocketChannle -> AbstractNioByteChannel -> AbstractNioChannel -> AbstractChan
     channelActive==========
     收到服务端的消息=我是服务器/127.0.0.1:8888
     channelReadComplete==========
+
+4.1 启动客户端的时候，创建SingleThreadEventExecutor，里面包含线程对象thread；但是启动的时候，thread是null，而CurrentThread
+是启动客户端的main线程，在main线程中会启动：io.netty.util.concurrent.SingleThreadEventExecutor.doStartThread
+创建SingleThreadEventExecutor的时候，会创建ThreadPerTaskExecutor，这个线程负责完成thread的创建和启动：
+thread的类型是FastThreadLocalThread = Thread[nioEventLoopGroup-2-1,10,main]
+
+客户端创建多个NioEventLoop只有第一个NioEventLoop对象的thread成员有值的；这个thread继承自：SingleThreadEventExecutor
+io.netty.util.concurrent.SingleThreadEventExecutor.ST_NOT_STARTED
+io.netty.util.concurrent.SingleThreadEventExecutor.ST_STARTED
+
+
+
+客户端handler处理分析：
+
+channelAdded
+channelRegistered
+channelActive
+ 好像都是runAllTasks执行的
+
+ 1. runAllTasks是在什么线程执行的？
+    nioEventLoopGroup，自定义和schedule任务都是的；但是要注意，nioEventLoop线程一般不止一个，而是一个组；所以debug时候有时候看到
+    scheduledTaskQueue明明初始化了，看到的还是null；因为这是在不同的线程中看到的，serverHandler提交scheduledTask的时候，
+    只会有一个NioEventLoop完成，因此只有这个线程才有scheduledTask。为了方便debug，建议都使用单线程，除非是研究多线程情况；
+    就算boss，work都搞一个线程，也老是debug到boss线程，而scheduledTask是注册到worker线程的；如何debug到worker线程是关键；换个思路，
+    Server端总是有boss线程的，而client端只有worker线程，所以把任务交给client发就好了；
+
+ 2. runAllTasks中到底执行了哪些task？ taskQueue和scheduledTaskQueue
+ 3. scheduledTaskQueue使用和原理，其实就是简单的优先级队列，自己改拔改拔变成scheduled，看起来有scheduled的味道
+
+
+
