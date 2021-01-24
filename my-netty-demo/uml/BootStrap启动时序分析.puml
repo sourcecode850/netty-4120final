@@ -1,0 +1,54 @@
+@startuml
+Bootstrap -> Bootstrap: connect(inetHost, inetPort)
+Bootstrap -> Bootstrap: connect(remoteAddress)
+Bootstrap -> Bootstrap: doResolveAndConnect(remoteAddress, localAddress)
+Bootstrap -> AbstractBootstrap: initAndRegister()
+note over Bootstrap
+ReflectiveChannelFactory.newChannel
+这个是bootStrap.channel时候创建的工厂，类型是NioSocketChannel
+父类abstractChannel中创建pipeline
+此时的pipeline只有头尾相互连着
+end note
+AbstractBootstrap -> ReflectiveChannelFactory: newChannel()
+AbstractBootstrap <- ReflectiveChannelFactory: NioSocketChannel
+AbstractBootstrap -> Bootstrap: init(channel)
+note over Bootstrap
+主要是初始化pipeline
+完成handler注入到pipeline中
+handler是Bootstrap创建的时候，注入自定义handler的地方
+定义此时的handlerState的状态是：pending=1
+end note
+AbstractBootstrap -> AbstractBootstrap: config()
+Bootstrap -> AbstractBootstrap: BootstrapConfig
+AbstractBootstrap -> BootstrapConfig: group()
+AbstractBootstrap <- BootstrapConfig: EventLoopGroup
+AbstractBootstrap -> MultithreadEventLoopGroup: register(channel)
+MultithreadEventLoopGroup -> MultithreadEventLoopGroup: next()
+MultithreadEventLoopGroup -> SingleThreadEventLoop: register(channel)
+note over MultithreadEventLoopGroup
+包装NioSocketChannel成DefaultChannelPromise
+end note
+MultithreadEventLoopGroup -> SingleThreadEventLoop: register(channel)
+SingleThreadEventLoop -> AbstactChannel: register(eventLoop, promise)
+note over AbstactChannel
+register重要方法，注册promise会判断当前线程是不是eventLoop，是的话才能注册
+很多情况下都不是inEventLoop，这个时候就通过eventLoop的taskQueue间接交给EventLoop
+调用eventLoop从父类继承的方法SingleThreadEventExecutor.execute
+小结：io.netty.channel.AbstractChannel.AbstractUnsafe.register0
+注册DefaultChannelPromise（NioSocketChannel的包装），必须是EventLoop中的线程
+才行，如果不是，则先创建EventLoop中的线程，再将task交给EventLoop中的taskQueue
+io.netty.util.concurrent.SingleThreadEventExecutor.doStartThread
+executor=ThreadPerTaskExecutor#execute()完成EventLoop中的线程创建并启动
+threadFactory.newThread(command).start();
+    (1)--> EventLoop.thread = Thread.currentThead()即ThreadPerTaskExecutor创建的线程
+    (2)--> SingleThreadEventExecutor.this.run()
+就交给EventLoop中的taskQueue，EventLoop中的线程会取taskQueue的任务执行
+
+接下来：EventLoop中的thread执行taskQueue中的任务，完成channelPromise的注册：即
+    io.netty.channel.AbstractChannel.AbstractUnsafe.register0
+end note
+
+Bootstrap -> Bootstrap: doResolveAndConnect0(channel, remoteAddress, localAddress, channel.newPromise())
+note right: 重新new了ChannelPromise，就是在原来的NioSocketChannel上继续包装一个新的ChannelPromise
+
+@enduml
