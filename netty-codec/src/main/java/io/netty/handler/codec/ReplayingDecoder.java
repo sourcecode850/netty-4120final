@@ -291,6 +291,8 @@ public abstract class ReplayingDecoder<S> extends ByteToMessageDecoder {
      * Stores the internal cumulative buffer's reader position.
      */
     protected void checkpoint() {
+        // 这个地方的cumulation虽然来自ByteToMessageDecoder，但是其实与ReplayingDecoderByteBuf中的buffer是同一个；
+        // 也就是说checkpoint记录的是流中的readerIndex
         checkpoint = internalBuffer().readerIndex();
     }
 
@@ -340,6 +342,7 @@ public abstract class ReplayingDecoder<S> extends ByteToMessageDecoder {
 
     @Override
     protected void callDecode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
+        // 将父类ByteToMessageDecoder#cumulation设置给replayable
         replayable.setCumulation(in);
         try {
             while (in.isReadable()) {
@@ -373,7 +376,7 @@ public abstract class ReplayingDecoder<S> extends ByteToMessageDecoder {
                     if (ctx.isRemoved()) {
                         break;
                     }
-
+                    // 这里如果没有读，但是state变化了，说明读取了部分的数据，缓存起来；
                     if (outSize == out.size()) {
                         if (oldInputLength == in.readableBytes() && oldState == state) {
                             throw new DecoderException(
@@ -382,6 +385,7 @@ public abstract class ReplayingDecoder<S> extends ByteToMessageDecoder {
                         } else {
                             // Previous data has been discarded or caused state transition.
                             // Probably it is reading on.
+                            // 这里说明没有读取到任务数据；
                             continue;
                         }
                     }
