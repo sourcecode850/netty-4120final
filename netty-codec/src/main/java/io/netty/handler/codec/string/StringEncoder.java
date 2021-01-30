@@ -76,7 +76,7 @@ public class StringEncoder extends MessageToMessageEncoder<CharSequence> {
         if (msg.length() == 0) {
             return;
         }
-
+        System.out.println("StringEncoder-->thread.currentThread()-->" + Thread.currentThread().getName() + "，时间=" + System.currentTimeMillis());
         out.add(ByteBufUtil.encodeString(ctx.alloc(), CharBuffer.wrap(msg), charset));
     }
 }

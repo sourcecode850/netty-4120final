@@ -9,12 +9,18 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
+import io.netty.util.concurrent.DefaultEventExecutorGroup;
+import io.netty.util.concurrent.EventExecutorGroup;
 
 /**
  * @description:
  * @date:2021/1/11 14:15
  **/
 public class NettyServer {
+
+    static final EventExecutorGroup group1 = new DefaultEventExecutorGroup(1);
+    static final EventExecutorGroup group2 = new DefaultEventExecutorGroup(1);
+    static final EventExecutorGroup group3 = new DefaultEventExecutorGroup(1);
 
     public static void main(String[] args) throws InterruptedException {
 
@@ -31,9 +37,10 @@ public class NettyServer {
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel ch) throws Exception {
-                        ch.pipeline().addLast(new StringDecoder())
-                                .addLast(new StringEncoder())
-                                .addLast(new NettyServerHandler());
+                        System.out.println("pipeline-->thread.currentThread()-->" + Thread.currentThread().getName() + "，时间=" + System.currentTimeMillis());
+                        ch.pipeline().addLast(group1, new StringDecoder())
+                                .addLast(group2, new StringEncoder())
+                                .addLast(group3, new NettyServerHandler());
                     }
                 });
 

@@ -20,6 +20,7 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        System.out.println("NettyServerHandler-->thread.currentThread()-->" + Thread.currentThread().getName() + "，时间=" + System.currentTimeMillis());
         System.out.println("服务端接收到客户端的数据是：" + msg.toString());
         ctx.writeAndFlush("你好，客户端，来信已收到");
     }

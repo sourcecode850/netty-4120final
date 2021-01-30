@@ -76,6 +76,8 @@ public class StringDecoder extends MessageToMessageDecoder<ByteBuf> {
 
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf msg, List<Object> out) throws Exception {
+        System.out.println("StringDecoder-->thread.currentThread()-->" + Thread.currentThread().getName() + "，时间=" + System.currentTimeMillis());
         out.add(msg.toString(charset));
+        Thread.sleep(1000);
     }
 }
