@@ -102,6 +102,10 @@ public abstract class ChannelInitializer<C extends Channel> extends ChannelInbou
             // The good thing about calling initChannel(...) in handlerAdded(...) is that there will be no ordering
             // surprises if a ChannelInitializer will add another ChannelInitializer. This is as all handlers
             // will be added in the expected order.
+            // ChannelInitializer initChannel原来是模板方法；；；；；；
+            // addLast当前的handler后。添加PendingHandlerCallback任务；注册channel后，执行PendingHandlerCallback任务；
+            // 执行当前的handlerAdded方法，完成pipeline中的其他handler（业务handler和编解码）的添加，并从pipeline中删除当前的channelInitializer
+            // 添加其他handler的时候，channel已经注册了，所以追踪pipeline#addLast可以看到，不需要再添加PendingHandlerCallback任务，直接调handler的handleAdde事件就好了
             initChannel(ctx);
         }
     }

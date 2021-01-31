@@ -313,7 +313,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
             return promise;
         }
     }
-
+    // 可以看到先initChannel，再注册channel，initChannel的时候，会pipeline#addLast-> ChannelInitializer
     final ChannelFuture initAndRegister() {
         Channel channel = null;
         try {
